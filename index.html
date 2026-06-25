@@ -262,7 +262,22 @@ function distEngine(mid, width, region, yr, anchor){
   return mid*dist*topBoost*widthAdj*magnitude(region,yr);
 }
 
-const INCOME_BRACKETS = { Lower:[0,20000], Middle:[20000,75000], Upper:[75000,150000] };
+function getIncomeBrackets() {
+    return {
+        Lower: [
+            Number(document.getElementById("lowerStart").value),
+            Number(document.getElementById("lowerEnd").value)
+        ],
+        Middle: [
+            Number(document.getElementById("middleStart").value),
+            Number(document.getElementById("middleEnd").value)
+        ],
+        Upper: [
+            Number(document.getElementById("upperStart").value),
+            Number(document.getElementById("upperEnd").value)
+        ]
+    };
+  };
 const INCOME_ANCHOR = 15000;
 let INCOME_NORM = 1;
 function incomeBaseFig(region, yr, b){ const [s,e]=INCOME_BRACKETS[b]; return distEngine((s+e)/2,e-s,region,yr,INCOME_ANCHOR)/INCOME_NORM; }
