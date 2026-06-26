@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank of Proa — Budget Submission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue: #1F3FBF; --black: #111111; --line: #111111;
+    --grey: #6B6B6B; --bg-soft: #F4F5F7; --green: #1A6B3C; --red: #B3261E;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#fff; color:var(--black); font-family:Arial,Helvetica,sans-serif; padding-bottom:60px; }
+  .wrap{ max-width:760px; margin:0 auto; }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:3px solid var(--line); }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand svg{ width:38px; height:28px; }
+  .brand h1{ font-family:Georgia,'Times New Roman',serif; font-weight:700; font-size:22px; margin:0; letter-spacing:0.5px; }
+  .nav-icons{ display:flex; align-items:center; gap:16px; }
+  .nav-icons svg{ width:24px; height:24px; }
+  .meta{ padding:16px 16px 14px; border-bottom:3px solid var(--line); }
+  .meta-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .meta-row label{ font-weight:700; text-decoration:underline; font-size:15px; min-width:100px; }
+  .meta-row select,.meta-row input[type=text]{ border:1px solid var(--black); padding:7px 10px; font-size:14px; font-family:Arial,Helvetica,sans-serif; flex:1; min-width:160px; background:#fff; }
+  .meta-row input::placeholder{ color:#8A8A8A; }
+  .storage-note{ font-size:11px; color:var(--grey); font-style:italic; margin-top:6px; }
+  .section{ margin:22px 16px 0; }
+  .banner{ display:inline-block; background:var(--blue); color:#fff; font-family:Georgia,'Times New Roman',serif; font-weight:700; font-size:17px; padding:8px 18px; margin-bottom:14px; }
+  .section-body{ padding:0 2px 4px; }
+  .item-block{ padding:9px 0; border-bottom:1px solid #eee; }
+  .item-block .name{ font-size:14px; font-weight:bold; margin-bottom:5px; }
+  .cat-block{ border-bottom:1px solid #ddd; }
+  .cat-header{ display:flex; align-items:center; gap:10px; padding:12px 4px; cursor:pointer; }
+  .cat-header:hover{ background:var(--bg-soft); }
+  .cat-name{ font-family:Georgia,serif; font-weight:700; font-size:15px; }
+  .cat-total{ margin-left:auto; font-family:Lexend,Arial,sans-serif; font-weight:700; font-size:14.5px; }
+  .expand-arrow{ font-size:14px; color:var(--grey); width:16px; text-align:center; }
+  .cat-content{ padding:0 4px 8px 14px; }
+  .item-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12.5px; }
+  .item-row .tag{ color:var(--grey); }
+  .item-row .prevval{ font-family:Lexend,Arial,sans-serif; color:#555; }
+  .item-row select,.item-row input[type=number]{ font-family:Lexend,Arial,sans-serif; font-size:13px; padding:4px 6px; border:1px solid var(--black); background:#fff; }
+  .item-row input[type=number]{ width:80px; text-align:right; }
+  .bracket-label{ font-size:11px; color:var(--grey); font-style:italic; }
+  .indicator{ font-family:Lexend,Arial,sans-serif; font-weight:600; font-size:12px; }
+  .revenue-out{ margin-left:auto; font-family:Lexend,Arial,sans-serif; font-weight:700; font-size:13.5px; }
+  .line{ display:flex; align-items:baseline; gap:8px; padding:6px 0; }
+  .line .leader{ flex:1; border-bottom:1px dotted #999; margin-bottom:3px; }
+  .line .lbl{ font-size:14px; white-space:nowrap; }
+  .line .val{ font-family:Lexend,Arial,sans-serif; font-size:14px; font-weight:600; min-width:90px; text-align:right; }
+  .line input[type=number]{ font-family:Lexend,Arial,sans-serif; font-size:14px; width:90px; text-align:right; border:none; border-bottom:1px solid var(--black); padding:2px 0; background:transparent; }
+  .line input[type=text].prog-name{ font-family:Arial,sans-serif; font-size:13px; border:none; border-bottom:1px solid var(--black); background:transparent; flex:1; min-width:100px; padding:2px 4px; }
+  .pfx{ font-family:Lexend,Arial,sans-serif; color:var(--grey); font-size:13px; }
+  .total-row{ border-top:2px solid var(--black); margin-top:8px; padding-top:8px; display:flex; justify-content:space-between; font-weight:700; }
+  .total-row .val{ font-family:Lexend,Arial,sans-serif; font-size:16px; }
+  .remove-btn{ border:none; background:none; color:var(--grey); font-size:16px; cursor:pointer; line-height:1; padding:0 4px; }
+  .add-prog-btn{ margin-top:10px; border:1px solid var(--black); background:#fff; color:var(--black); font-family:Arial,sans-serif; font-size:13px; padding:6px 14px; cursor:pointer; }
+  .add-prog-btn:hover{ background:var(--bg-soft); }
+  .balance-line .val.pos{ color:var(--green); }
+  .balance-line .val.neg{ color:var(--red); }
+  .export-wrap{ margin:28px 16px 0; text-align:center; }
+  #exportBtn{ background:var(--black); color:#fff; border:none; padding:14px 32px; font-family:Georgia,serif; font-weight:700; font-size:15px; letter-spacing:0.5px; cursor:pointer; }
+  #exportBtn:hover{ background:var(--blue); }
+  #saveStatus{ font-size:12px; color:var(--grey); margin-top:8px; font-style:italic; }
+  .footnote{ margin:20px 16px 0; font-size:11px; color:var(--grey); font-family:Arial,sans-serif; }
+  /* Dept description textarea */
+  .dept-desc{ width:100%; margin-top:6px; font-size:12px; font-family:Arial,sans-serif; border:1px solid #ccc; padding:5px 8px; resize:vertical; min-height:38px; color:#333; }
+  @media print{ .add-prog-btn,.remove-btn,#exportBtn,.storage-note{ display:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 60 40">
+        <polygon points="0,30 22,30 30,18 8,18" fill="#B3261E"/>
+        <polygon points="6,22 28,22 36,10 14,10" fill="#1F3FBF"/>
+        <polygon points="12,14 34,14 42,2 20,2" fill="#B3261E"/>
+      </svg>
+      <h1>BANK OF PROA</h1>
+    </div>
+    <div class="nav-icons">
+      <svg id="accountIcon" viewBox="0 0 24 24" fill="currentColor" style="cursor:pointer;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+    </div>
+  </header>
+
+  <div class="meta">
+    <div class="meta-row">
+      <label>Region:</label>
+      <select id="region">
+        <option value="NewEngland">New England</option>
+        <option value="Dixie">Dixie</option>
+        <option value="Pacifica">Pacifica</option>
+        <option value="Lincoln">Lincoln</option>
+      </select>
+    </div>
+    <div class="meta-row">
+      <label>Fiscal Year:</label>
+      <input type="text" id="year" placeholder="eg. 1993-94" value="1994-95">
+    </div>
+    <div class="meta-row">
+      <label>Sponsor:</label>
+      <input type="text" id="sponsor" placeholder="eg. Gov. Roy W. Cooper">
+    </div>
+    <div class="storage-note">Data is saved to this browser's local storage. Export saves this budget (so next year can compare against it) and downloads the Budget Act .docx.</div>
+  </div>
+
+  <!-- III. REVENUES -->
+  <div class="section">
+    <div class="banner">III. REVENUES</div>
+    <div class="section-body" id="revenueBody"></div>
+    <div id="grantsBlock"></div>
+    <div class="total-row"><span>Total Revenue</span><span class="val" id="revTotal">—</span></div>
+  </div>
+
+  <!-- IV. EXPENDITURES -->
+  <div class="section">
+    <div class="banner">IV. EXPENDITURES</div>
+    <div class="section-body" id="expenditureBody"></div>
+    <div id="customPrograms"></div>
+    <button class="add-prog-btn" id="addProgBtn">+ Add Program</button>
+    <div class="line" style="margin-top:14px;">
+      <span class="lbl"><i>Pay Down Debt (auto)</i></span><span class="leader"></span>
+      <span class="pfx">$</span><span class="val" id="payDownDebt">—</span><span class="pfx">B</span>
+    </div>
+    <div class="total-row"><span>Total Expenditure</span><span class="val" id="expTotal">—</span></div>
+  </div>
+
+  <!-- V. DEBT -->
+  <div class="section">
+    <div class="banner">V. DEBT</div>
+    <div class="section-body">
+      <div class="line"><span class="lbl">Prior Year Debt</span><span class="leader"></span><span class="pfx">$</span><input type="number" id="priorDebt" value="648"><span class="pfx">B</span></div>
+      <div class="line"><span class="lbl">Interest Rate</span><span class="leader"></span><input type="number" id="interestRate" value="4" style="width:60px;"><span class="pfx">%</span></div>
+      <div class="line"><span class="lbl"><i>Net Interest (auto)</i></span><span class="leader"></span><span class="pfx">$</span><span class="val" id="netInterest">—</span><span class="pfx">B</span></div>
+    </div>
+  </div>
+
+  <!-- VI. SUMMARY -->
+  <div class="section">
+    <div class="banner">VI. SUMMARY</div>
+    <div class="section-body">
+      <div class="line"><span class="lbl">Total Revenue</span><span class="leader"></span><span class="val" id="sumRevenue">—</span></div>
+      <div class="line"><span class="lbl">Total Expenditure</span><span class="leader"></span><span class="val" id="sumExpenditure">—</span></div>
+      <div class="line balance-line"><span class="lbl" id="balanceLabel">Surplus</span><span class="leader"></span><span class="val" id="sumBalance">—</span></div>
+      <div class="total-row"><span>New Total Debt</span><span class="val" id="sumDebt">—</span></div>
+    </div>
+  </div>
+
+  <!-- MASTER PANEL -->
+  <div class="section" id="masterPanel" style="display:none;">
+    <div class="banner" style="background:var(--black);">MASTER PANEL</div>
+    <div class="section-body">
+      <p style="font-size:12px; color:var(--grey); font-style:italic;">To be finalized — placeholder controls only.</p>
+      <div class="name" style="font-weight:bold; margin:10px 0 6px;">Debt Interest Rates — All Regions</div>
+      <div class="line"><span class="lbl">New England</span><span class="leader"></span><input type="number" id="masterRate_NewEngland" value="4"><span class="pfx">%</span></div>
+      <div class="line"><span class="lbl">Dixie</span><span class="leader"></span><input type="number" id="masterRate_Dixie" value="4"><span class="pfx">%</span></div>
+      <div class="line"><span class="lbl">Pacifica</span><span class="leader"></span><input type="number" id="masterRate_Pacifica" value="4"><span class="pfx">%</span></div>
+      <div class="line"><span class="lbl">Lincoln</span><span class="leader"></span><input type="number" id="masterRate_Lincoln" value="4"><span class="pfx">%</span></div>
+      <div class="name" style="font-weight:bold; margin:18px 0 6px;">Statistics</div>
+      <button class="add-prog-btn" id="genStatsBtn">Generate Regional Statistics</button>
+    </div>
+  </div>
+
+  <div class="export-wrap">
+    <button id="exportBtn">Export Budget (.docx)</button>
+    <div id="saveStatus"></div>
+  </div>
+
+  <div class="footnote">Export saves this budget to the shared ledger (so it becomes next year's "Prev Year" comparison) and downloads a formatted .docx Budget Act for your region.</div>
+</div>
+
+<script>
+// ─── ECONOMIC ENGINE ───────────────────────────────────────────────────────────
+const GDP_1991 = { NewEngland:1.40, Dixie:1.10, Pacifica:0.90, Lincoln:0.70 };
+const GROWTH_RATE = { NewEngland:0.029, Dixie:0.022, Pacifica:0.024, Lincoln:0.012 };
+const DEBT_DEFAULTS = { NewEngland:648, Dixie:509, Pacifica:418, Lincoln:325 };
+
+function regionalGDP(region,yr){ return GDP_1991[region]*Math.pow(1+GROWTH_RATE[region],yr-1991); }
+function nationalGDP(yr){ return Object.keys(GDP_1991).reduce((s,r)=>s+regionalGDP(r,yr),0); }
+function regionFactor(region,yr){ return regionalGDP(region,yr)/(nationalGDP(yr)/4); }
+function magnitude(region,yr){ return regionalGDP(region,yr)/GDP_1991[region]; }
+function smoothstep(x,e0,e1){ if(e1===e0)return 0; let t=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return t*t*(3-2*t); }
+
+function distEngine(mid,width,region,yr,anchor){
+  const scale=Math.pow(1.021,yr-1985); const ineq=1+(yr-1985)*0.0025;
+  const rf=regionFactor(region,yr); const norm=mid/(anchor*scale*rf);
+  const expB=Math.exp(-Math.pow(norm,0.7)); const paretoB=Math.pow(norm,-(1.3*ineq));
+  const w=smoothstep(norm,1.0,1.6); const dist=(1-w)*expB+w*paretoB;
+  const topBoost=1+0.4*smoothstep(norm,1.2,1.8)+0.8*smoothstep(norm,2.2,2.8);
+  const widthAdj=Math.pow(Math.log(1+width),1.1);
+  return mid*dist*topBoost*widthAdj*magnitude(region,yr);
+}
+
+// Income brackets — editable via bracketConfig
+let bracketConfig = {
+  income: [
+    { id:'inc_Lower',  label:'Lower Class',  lo:0,     hi:8000,  labelHi:'$8,000' },
+    { id:'inc_Middle', label:'Middle Class', lo:8000,  hi:25000, labelHi:'$25,000' },
+    { id:'inc_Upper',  label:'Upper Class',  lo:25000, hi:null,  labelHi:null }
+  ],
+  corp: [
+    { id:'corp_Small', label:'Small & Medium Business', lo:0,     hi:50000, labelHi:'$50,000' },
+    { id:'corp_Large', label:'Large Business',          lo:50000, hi:null,  labelHi:null }
+  ]
+};
+
+const INCOME_ANCHOR = 15000;
+let INCOME_NORM = 1;
+function incomeBaseFig(region,yr,bracketId){
+  const b = bracketConfig.income.find(x=>x.id===bracketId);
+  if(!b) return 0;
+  const lo = b.lo, hi = b.hi || b.lo*3;
+  return distEngine((lo+hi)/2, hi-lo, region, yr, INCOME_ANCHOR)/INCOME_NORM;
+}
+
+const CORP_ANCHOR = 750000;
+let CORP_NORM = 1;
+function corpBaseFig(region,yr,bracketId){
+  const b = bracketConfig.corp.find(x=>x.id===bracketId);
+  if(!b) return 0;
+  const lo = b.lo, hi = b.hi || b.lo*3;
+  return distEngine((lo+hi)/2, hi-lo, region, yr, CORP_ANCHOR)/CORP_NORM;
+}
+
+const SALES_SHARE = { Gasoline:0.04, Alcohol:0.015, Tobacco:0.01 };
+const CONSUMPTION_SHARE = 0.65;
+function salesBaseFig(region,yr,c){ return regionalGDP(region,yr)*1e12*CONSUMPTION_SHARE*SALES_SHARE[c]; }
+
+const SERVICES_SHARE = { GeneralSales:0.20, Services:0.15 };
+const CAPGAINS_SHARE = 0.03;
+function servicesBaseFig(region,yr,c){
+  if(c==='CapitalGains') return regionalGDP(region,yr)*1e12*CAPGAINS_SHARE;
+  return regionalGDP(region,yr)*1e12*CONSUMPTION_SHARE*SERVICES_SHARE[c];
+}
+
+(function calibrate(){
+  let raw=0;
+  bracketConfig.income.forEach(b=>{ const lo=b.lo,hi=b.hi||b.lo*3; raw+=distEngine((lo+hi)/2,hi-lo,'NewEngland',1993,INCOME_ANCHOR); });
+  INCOME_NORM=raw/(regionalGDP('NewEngland',1993)*1e12*0.55);
+  raw=0;
+  bracketConfig.corp.forEach(b=>{ const lo=b.lo,hi=b.hi||b.lo*3; raw+=distEngine((lo+hi)/2,hi-lo,'NewEngland',1993,CORP_ANCHOR); });
+  CORP_NORM=raw/(regionalGDP('NewEngland',1993)*1e12*0.12);
+})();
+
+// ─── FORM STATE ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmtB = n => '$'+(n/1e9).toLocaleString('en-US',{maximumFractionDigits:1})+'B';
+const fmtBfull = n => '$'+(n/1e9).toFixed(2)+'B';
+const fmtDollar = n => '$'+Math.round(n).toLocaleString('en-US');
+
+function parseYear(str){ const m=(str||'').match(/^\s*(\d{4})/); return m?parseInt(m[1]):1994; }
+
+const TAX_DEFAULTS = {
+  inc_Lower:6.35, inc_Middle:15.08, inc_Upper:25.40,
+  corp_Small:15.00, corp_Large:21.00,
+  sales_Gasoline:20.00, sales_Alcohol:30.00, sales_Tobacco:40.00,
+  serv_GeneralSales:18.73, serv_Services:5.00, serv_CapitalGains:15.00
+};
+
+// TAX_ROWS derived dynamically from bracketConfig
+function getTaxRows(){
+  return [
+    ...bracketConfig.income.map(b=>({id:b.id, label:b.label, cat:'income'})),
+    ...bracketConfig.corp.map(b=>({id:b.id, label:b.label, cat:'corp'})),
+    {id:'sales_Gasoline',label:'Gasoline',cat:'sales'},
+    {id:'sales_Alcohol',label:'Alcohol',cat:'sales'},
+    {id:'sales_Tobacco',label:'Tobacco',cat:'sales'},
+    {id:'serv_GeneralSales',label:'General Sales',cat:'services'},
+    {id:'serv_Services',label:'Services',cat:'services'},
+    {id:'serv_CapitalGains',label:'Capital Gains',cat:'services'}
+  ];
+}
+
+const TAX_CATEGORIES = [
+  {key:'income', label:'Income Tax'},
+  {key:'corp',   label:'Corporate Tax'},
+  {key:'sales',  label:'Excise Tax'},
+  {key:'services',label:'Services Tax'}
+];
+
+const DEPT_ROWS = [
+  {id:'expEducation', label:'Education',           def:40, title:'I',    name:'DEPARTMENT OF EDUCATION',                       desc:'K-12 Schools, School Meals, Teacher Salaries; Higher Education grants; Research & vocational training programs.'},
+  {id:'expHealth',    label:'Health & Human Svcs', def:45, title:'II',   name:'DEPARTMENT OF HEALTH AND HUMAN SERVICES',        desc:'Medicaid & insurance programs; public health initiatives; disease prevention and hospital funding.'},
+  {id:'expTransport', label:'Transportation',       def:20, title:'III',  name:'DEPARTMENT OF TRANSPORTATION',                   desc:'Highways & roads maintenance; public transit funding; ports and aviation infrastructure.'},
+  {id:'expSafety',    label:'Public Safety',        def:25, title:'IV',   name:'DEPARTMENT OF PUBLIC SAFETY',                    desc:'Law enforcement support; emergency management; disaster preparedness and response operations.'},
+  {id:'expJustice',   label:'Justice',              def:15, title:'V',    name:'DEPARTMENT OF JUSTICE',                          desc:'State judiciary and court systems; Bureau of Prisons; legal aid and prosecution services.'},
+  {id:'expHUD',       label:'Housing & Urban Dev.', def:18, title:'VI',   name:'DEPARTMENT OF HOUSING & URBAN DEVELOPMENT',      desc:'Affordable housing programs; urban renewal and development grants; community infrastructure.'},
+  {id:'expLabour',    label:'Commerce & Labour',    def:10, title:'VII',  name:'DEPARTMENT OF COMMERCE',                         desc:'Business & industry support; labor and employment programs; workforce development initiatives.'},
+  {id:'expAg',        label:'Food & Agriculture',   def:8,  title:'VIII', name:'DEPARTMENT OF FOOD & AGRICULTURE',               desc:'Farmer support programs; SNAP and food assistance schemes; rural agricultural development.'},
+  {id:'expTreasury',  label:'Treasury',             def:3,  title:'IX',   name:'DEPARTMENT OF TREASURY',                         desc:'Financial operations and fiscal management; tax administration; inter-governmental financial coordination.'},
+  {id:'expAdmin',     label:'General Admin',        def:2,  title:'X',    name:'GENERAL ADMINISTRATION & LEGISLATIVE AFFAIRS',   desc:'Executive administration; legislative support; inter-departmental coordination and public affairs.'},
+  {id:'expSocial',    label:'Social Services',      def:35, title:'XI',   name:'DEPARTMENT OF SOCIAL SERVICES',                  desc:'Rural development programs; natural resources management; community welfare and social safety net.'},
+];
+
+let customPrograms = [];
+let progId = 0;
+
+// ─── BUILD REVENUE SECTION ─────────────────────────────────────────────────────
+function bracketRangeLabel(b){
+  const lo = '$'+b.lo.toLocaleString('en-US');
+  const hi = b.hi ? '$'+b.hi.toLocaleString('en-US') : 'No Limit';
+  return lo + ' – ' + hi;
+}
+
+function buildRevenueSection(){
+  const TAX_ROWS = getTaxRows();
+  $('revenueBody').innerHTML = TAX_CATEGORIES.map(cat => `
+    <div class="cat-block">
+      <div class="cat-header" data-cat="${cat.key}">
+        <span class="cat-name">${cat.label}</span>
+        <span class="cat-total" id="catTotal_${cat.key}">—</span>
+        <span class="expand-arrow" id="arrow_${cat.key}">▾</span>
+      </div>
+      <div class="cat-content" id="catContent_${cat.key}" style="display:none;">
+        ${TAX_ROWS.filter(r=>r.cat===cat.key).map(r => {
+          const incBracket = bracketConfig.income.find(b=>b.id===r.id);
+          const corpBracket = bracketConfig.corp.find(b=>b.id===r.id);
+          const bracket = incBracket || corpBracket;
+          const bracketHtml = bracket ? `
+            <div style="margin-bottom:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="bracket-label">Bracket range:</span>
+              <span class="bracket-label">$<input type="number" id="blo_${r.id}" value="${bracket.lo}" style="width:80px;font-size:11px;padding:1px 3px;" min="0"></span>
+              <span class="bracket-label">–</span>
+              <span class="bracket-label" id="bhi_wrap_${r.id}">
+                $<input type="number" id="bhi_${r.id}" value="${bracket.hi||''}" style="width:80px;font-size:11px;padding:1px 3px;" placeholder="∞" min="0">
+              </span>
+            </div>` : '';
+          return `
+          <div class="item-block" data-row="${r.id}">
+            <div class="name">${r.label}</div>
+            ${bracketHtml}
+            <div class="item-row">
+              <span class="tag">Prev:</span><span class="prevval" id="prev_${r.id}">—</span>
+              <span class="tag">Rate:</span><input type="number" id="rate_${r.id}" value="${TAX_DEFAULTS[r.id]||0}" step="0.01" style="width:70px;"><span class="pfx">%</span>
+              <span class="indicator" id="ind_${r.id}"></span>
+              <span class="revenue-out" id="out_${r.id}">—</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  // Federal Grants block
+  $('grantsBlock').innerHTML = `
+    <div class="cat-block">
+      <div class="cat-header" style="cursor:default;">
+        <span class="cat-name">Federal Grants</span>
+        <span class="cat-total" id="catTotal_grants">—</span>
+        <span class="expand-arrow" style="visibility:hidden;">▾</span>
+      </div>
+      <div style="padding:0 4px 8px 14px; font-size:12px; color:var(--grey); font-style:italic; display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+        <span>Auto — 18% of income + corporate tax</span>
+        <span>Prev: <span id="prev_grants">—</span></span>
+        <span id="ind_grants"></span>
+      </div>
+    </div>`;
+
+  // Bracket input listeners — recalibrate then re-render
+  bracketConfig.income.concat(bracketConfig.corp).forEach(b=>{
+    const loEl = document.getElementById('blo_'+b.id);
+    const hiEl = document.getElementById('bhi_'+b.id);
+    if(loEl) loEl.addEventListener('input', e=>{ b.lo=parseFloat(e.target.value)||0; recalibrate(); render(); });
+    if(hiEl) hiEl.addEventListener('input', e=>{ b.hi=parseFloat(e.target.value)||null; recalibrate(); render(); });
+  });
+
+  TAX_ROWS.forEach(r=>{ const el=document.getElementById('rate_'+r.id); if(el) el.addEventListener('input', render); });
+
+  TAX_CATEGORIES.forEach(cat=>{
+    const hdr = $('revenueBody').querySelector(`.cat-header[data-cat="${cat.key}"]`);
+    if(hdr) hdr.addEventListener('click',()=>{
+      const content=$('catContent_'+cat.key); const arrow=$('arrow_'+cat.key);
+      const isOpen=content.style.display!=='none';
+      content.style.display=isOpen?'none':'block';
+      arrow.textContent=isOpen?'▾':'▴';
+    });
+  });
+}
+
+function recalibrate(){
+  let raw=0;
+  bracketConfig.income.forEach(b=>{ const lo=b.lo,hi=b.hi||b.lo*3||50000; raw+=distEngine((lo+hi)/2,hi-lo,'NewEngland',1993,INCOME_ANCHOR); });
+  INCOME_NORM=raw/(regionalGDP('NewEngland',1993)*1e12*0.55);
+  raw=0;
+  bracketConfig.corp.forEach(b=>{ const lo=b.lo,hi=b.hi||b.lo*3||500000; raw+=distEngine((lo+hi)/2,hi-lo,'NewEngland',1993,CORP_ANCHOR); });
+  CORP_NORM=raw/(regionalGDP('NewEngland',1993)*1e12*0.12);
+}
+
+// ─── BUILD EXPENDITURE SECTION ─────────────────────────────────────────────────
+function buildExpenditureSection(){
+  $('expenditureBody').innerHTML = DEPT_ROWS.map(r => `
+    <div class="item-block" data-row="${r.id}">
+      <div class="name">${r.label}</div>
+      <div class="item-row">
+        <span class="tag">Prev:</span><span class="prevval" id="prev_${r.id}">—</span>
+        <span class="tag">Amount:</span><span class="pfx">$</span>
+        <input type="number" id="${r.id}" value="${r.def}">
+        <span class="pfx">B</span>
+        <span class="indicator" id="ind_${r.id}"></span>
+      </div>
+      <textarea class="dept-desc" id="desc_${r.id}" placeholder="Description for budget document…">${r.desc}</textarea>
+    </div>
+  `).join('');
+  DEPT_ROWS.forEach(r=>{ $(r.id).addEventListener('input',render); });
+}
+
+function renderCustomPrograms(){
+  const container=$('customPrograms');
+  container.innerHTML=customPrograms.map(p=>`
+    <div class="line">
+      <input type="text" class="prog-name" data-id="${p.id}" placeholder="Program name" value="${p.name}">
+      <span class="pfx">$</span>
+      <input type="number" data-id="${p.id}" class="prog-amt" value="${p.amount}" style="width:70px;">
+      <span class="pfx">B</span>
+      <button class="remove-btn" data-id="${p.id}">✕</button>
+    </div>`).join('');
+  container.querySelectorAll('.prog-name').forEach(el=>el.addEventListener('input',e=>{
+    const p=customPrograms.find(p=>p.id==e.target.dataset.id); if(p){p.name=e.target.value;render();}
+  }));
+  container.querySelectorAll('.prog-amt').forEach(el=>el.addEventListener('input',e=>{
+    const p=customPrograms.find(p=>p.id==e.target.dataset.id); if(p){p.amount=parseFloat(e.target.value)||0;render();}
+  }));
+  container.querySelectorAll('.remove-btn').forEach(el=>el.addEventListener('click',e=>{
+    customPrograms=customPrograms.filter(p=>p.id!=e.target.dataset.id); renderCustomPrograms(); render();
+  }));
+}
+
+$('addProgBtn').addEventListener('click',()=>{ customPrograms.push({id:progId++,name:'',amount:0}); renderCustomPrograms(); render(); });
+
+// ─── PERSISTENCE ───────────────────────────────────────────────────────────────
+let prevYearData = null;
+let ledgerData = null; // full ledger:allData cache
+
+// Parse fiscal year string to start int: "1994-95" -> 1994
+function fyToInt(str){ const m=(str||'').match(/(\d{4})/); return m?parseInt(m[1]):1993; }
+// Previous fiscal year string: "1995-96" -> "1993-94"
+function prevFYStr(str){ const y=fyToInt(str); return (y-2)+'-'+(String(y-1).slice(-2)); }
+// Current fiscal year string from integer: 1994 -> "1994-95"
+function intToFY(y){ return y+'-'+(String(y+1).slice(-2)); }
+
+function loadLedger(){
+  try{
+    const d=localStorage.getItem('proa_ledger_allData');
+    return d?JSON.parse(d):null;
+  }catch(e){ console.warn('Ledger load error',e); return null; }
+}
+
+// Get data object for a region+yearStr from ledger
+function getLedgerYear(region,yearStr){
+  if(!ledgerData||!ledgerData[region]) return null;
+  return ledgerData[region][yearStr]||null;
+}
+
+function loadPrevYear(region,yearStr){
+  // Try ledger first (preferred source of truth)
+  if(ledgerData){
+    const prevStr=prevFYStr(yearStr);
+    const d=getLedgerYear(region,prevStr);
+    if(d&&Object.keys(d).length>0){
+      // Convert ledger format to budget form format
+      const rates={};
+      Object.keys(d).forEach(k=>{ if(k.endsWith('_rate')) rates[k.replace('_rate','')]=d[k]; });
+      const depts={};
+      ['expEducation','expHealth','expTransport','expSafety','expJustice',
+       'expHUD','expLabour','expAg','expTreasury','expAdmin','expSocial'].forEach(id=>{
+        if(d[id]!=null) depts[id]=parseFloat(d[id])||0;
+      });
+      return {
+        rates, depts,
+        grants: parseFloat(d['grants'])||0,
+        priorDebt: parseFloat(d['prevDebt'])||DEBT_DEFAULTS[region],
+        interestRate: parseFloat(d['interestRate'])||4,
+        totalDebt: parseFloat(d['totalDebt'])||null,
+      };
+    }
+  }
+  // Fall back to budget key
+  try{
+    const yr=fyToInt(yearStr);
+    const key='proa_budget_'+region+'_'+(yr-2);
+    const d=localStorage.getItem(key);
+    return d?JSON.parse(d):null;
+  }catch(e){ return null; }
+}
+
+// Pre-fill form fields from ledger for current year if data exists
+function prefillFromLedger(region,yearStr){
+  const d=getLedgerYear(region,yearStr);
+  if(!d||Object.keys(d).length===0) return;
+  // Tax rates
+  getTaxRows().forEach(r=>{
+    const key=r.id+'_rate';
+    if(d[key]!=null){
+      const el=document.getElementById('rate_'+r.id);
+      if(el) el.value=parseFloat(d[key]).toFixed(2);
+    }
+  });
+  // Dept spending
+  DEPT_ROWS.forEach(r=>{
+    if(d[r.id]!=null){
+      const el=document.getElementById(r.id);
+      if(el) el.value=parseFloat(d[r.id]).toFixed(1);
+    }
+  });
+  // Prior debt — use totalDebt from prev year as this year's priorDebt
+  const prevStr=prevFYStr(yearStr);
+  const prevD=getLedgerYear(region,prevStr);
+  if(prevD&&prevD['totalDebt']!=null){
+    $('priorDebt').value=parseFloat(prevD['totalDebt']).toFixed(1);
+  } else if(d['prevDebt']!=null){
+    $('priorDebt').value=parseFloat(d['prevDebt']).toFixed(1);
+  }
+  // Interest rate
+  if(d['interestRate']!=null) $('interestRate').value=parseFloat(d['interestRate']).toFixed(1);
+}
+
+function saveCurrent(region,yearStr,data){
+  try{
+    const yr=fyToInt(yearStr);
+    // Write budget key for this region/year
+    localStorage.setItem('proa_budget_'+region+'_'+yr, JSON.stringify(data));
+    // Write back into ledger:allData (shared store master reads from)
+    if(!ledgerData) ledgerData={};
+    if(!ledgerData[region]) ledgerData[region]={};
+    if(!ledgerData[region][yearStr]) ledgerData[region][yearStr]={};
+    const ld=ledgerData[region][yearStr];
+    Object.keys(data.rates||{}).forEach(id=>{ ld[id+'_rate']=data.rates[id]; });
+    Object.keys(data.depts||{}).forEach(id=>{ ld[id]=data.depts[id]; });
+    ld['grants']=data.grants||0;
+    ld['interestRate']=data.interestRate||4;
+    ld['prevDebt']=data.priorDebt||0;
+    localStorage.setItem('proa_ledger_allData', JSON.stringify(ledgerData));
+    return true;
+  }catch(e){ console.error(e); return false; }
+}
+
+function refreshPrevYear(){
+  const region=$('region').value;
+  const yearStr=$('year').value.trim()||'1994-95';
+  // Refresh ledger cache
+  ledgerData=loadLedger();
+  // Pre-fill form from ledger if data exists for this year
+  prefillFromLedger(region,yearStr);
+  // Load prev year for comparison indicators
+  prevYearData=loadPrevYear(region,yearStr);
+  render();
+}
+
+function indicatorHTML(current,previous,increaseColor,decreaseColor,unit){
+  if(previous===null||previous===undefined||isNaN(previous)) return '<span style="color:#999;">no prior record</span>';
+  const diff=current-previous;
+  if(Math.abs(diff)<0.005) return '<span style="color:#444;">No change</span>';
+  const increased=diff>0; const color=increased?increaseColor:decreaseColor; const arrow=increased?'▲':'▼';
+  return `<span style="color:${color};">${arrow} ${increased?'+':''}${diff.toFixed(2)}${unit}</span>`;
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  const region=$('region').value; const yr=parseYear($('year').value);
+  const TAX_ROWS=getTaxRows();
+  let income=0,corp=0,sales=0,services=0;
+  TAX_ROWS.forEach(r=>{
+    const rateEl=document.getElementById('rate_'+r.id); if(!rateEl) return;
+    const rate=parseFloat(rateEl.value)/100;
+    let base,group;
+    if(r.cat==='income'){ base=incomeBaseFig(region,yr,r.id); group='income'; }
+    else if(r.cat==='corp'){ base=corpBaseFig(region,yr,r.id); group='corp'; }
+    else if(r.cat==='sales'){ const c=r.id.split('_')[1]; base=salesBaseFig(region,yr,c); group='sales'; }
+    else{ const c=r.id.split('_')[1]; base=servicesBaseFig(region,yr,c); group='services'; }
+    const rev=base*rate;
+    if(group==='income')income+=rev; else if(group==='corp')corp+=rev; else if(group==='sales')sales+=rev; else services+=rev;
+    const outEl=document.getElementById('out_'+r.id); if(outEl) outEl.textContent=fmtB(rev);
+    const prevRate=prevYearData&&prevYearData.rates?prevYearData.rates[r.id]:null;
+    const prevEl=document.getElementById('prev_'+r.id); if(prevEl) prevEl.textContent=prevRate!=null?prevRate.toFixed(2)+'%':'—';
+    const indEl=document.getElementById('ind_'+r.id); if(indEl) indEl.innerHTML=indicatorHTML(rate*100,prevRate,'var(--red)','var(--green)','%');
+  });
+
+  const grants=0.18*(income+corp);
+  const totalRevenue=income+corp+sales+services+grants;
+  $('revTotal').textContent=fmtB(totalRevenue);
+  if($('catTotal_grants')) $('catTotal_grants').textContent=fmtB(grants);
+  const prevGrants=prevYearData&&prevYearData.grants!=null?prevYearData.grants:null;
+  if($('prev_grants')) $('prev_grants').textContent=prevGrants!=null?fmtB(prevGrants):'—';
+  if($('ind_grants')) $('ind_grants').innerHTML=indicatorHTML(grants/1e9,prevGrants!=null?prevGrants/1e9:null,'var(--red)','var(--green)','B');
+  if($('catTotal_income')) $('catTotal_income').textContent=fmtB(income);
+  if($('catTotal_corp')) $('catTotal_corp').textContent=fmtB(corp);
+  if($('catTotal_sales')) $('catTotal_sales').textContent=fmtB(sales);
+  if($('catTotal_services')) $('catTotal_services').textContent=fmtB(services);
+
+  let deptTotal=0;
+  DEPT_ROWS.forEach(r=>{
+    const val=parseFloat($(r.id).value)||0; deptTotal+=val*1e9;
+    const prevVal=prevYearData&&prevYearData.depts?prevYearData.depts[r.id]:null;
+    $('prev_'+r.id).textContent=prevVal!=null?'$'+prevVal.toFixed(1)+'B':'—';
+    $('ind_'+r.id).innerHTML=indicatorHTML(val,prevVal,'var(--green)','var(--red)','B');
+  });
+  const customTotal=customPrograms.reduce((s,p)=>s+(p.amount||0),0)*1e9;
+  const priorDebt=(parseFloat($('priorDebt').value)||0)*1e9;
+  const intRate=parseFloat($('interestRate').value)||0;
+  const netInterest=priorDebt*(intRate/100);
+  $('netInterest').textContent=(netInterest/1e9).toLocaleString('en-US',{maximumFractionDigits:2});
+  const operatingExpenditure=deptTotal+customTotal+netInterest;
+  const actualBalance=totalRevenue-operatingExpenditure;
+  const payDownDebt=actualBalance>0?actualBalance:0;
+  $('payDownDebt').textContent=(payDownDebt/1e9).toLocaleString('en-US',{maximumFractionDigits:2});
+  const totalExp=operatingExpenditure+payDownDebt;
+  $('expTotal').textContent=fmtB(totalExp);
+  const newDebt=priorDebt-actualBalance;
+  $('sumRevenue').textContent=fmtB(totalRevenue);
+  $('sumExpenditure').textContent=fmtB(totalExp);
+  const balEl=$('sumBalance');
+  $('balanceLabel').textContent=actualBalance>=0?'Surplus':'Deficit';
+  balEl.textContent=(actualBalance>=0?'+':'-')+fmtB(Math.abs(actualBalance));
+  balEl.className='val '+(actualBalance>=0?'pos':'neg');
+  $('sumDebt').textContent=fmtB(newDebt);
+
+  return { income, corp, sales, services, grants, totalRevenue, totalExp, actualBalance, newDebt, netInterest, payDownDebt, priorDebt, deptTotal };
+}
+
+function gatherStateForSave(){
+  const TAX_ROWS=getTaxRows();
+  const rates={};
+  TAX_ROWS.forEach(r=>{ const el=document.getElementById('rate_'+r.id); if(el) rates[r.id]=parseFloat(el.value)||0; });
+  const depts={};
+  DEPT_ROWS.forEach(r=>{ depts[r.id]=parseFloat($(r.id).value)||0; });
+  const descs={};
+  DEPT_ROWS.forEach(r=>{ const el=document.getElementById('desc_'+r.id); if(el) descs[r.id]=el.value; });
+  const region=$('region').value; const yr=parseYear($('year').value);
+  let inc=0,corp=0;
+  getTaxRows().forEach(r=>{
+    const rate=(rates[r.id]||0)/100;
+    if(r.cat==='income') inc+=incomeBaseFig(region,yr,r.id)*rate;
+    else if(r.cat==='corp') corp+=corpBaseFig(region,yr,r.id)*rate;
+  });
+  const grants=0.18*(inc+corp);
+  return {
+    rates, depts, descs, grants,
+    sponsor:$('sponsor').value,
+    priorDebt:parseFloat($('priorDebt').value)||0,
+    interestRate:parseFloat($('interestRate').value)||0,
+    customPrograms,
+    brackets:{ income:bracketConfig.income.map(b=>({id:b.id,lo:b.lo,hi:b.hi})), corp:bracketConfig.corp.map(b=>({id:b.id,lo:b.lo,hi:b.hi})) }
+  };
+}
+
+// ─── SEED PREV YEAR DATA ───────────────────────────────────────────────────────
+// No seed data — ledger is source of truth. Falls back to defaults if no ledger.
+
+// ─── PRELOAD JSZIP ─────────────────────────────────────────────────────────────
+(function(){
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+  document.head.appendChild(s);
+})();
+
+// ─── EXPORT ────────────────────────────────────────────────────────────────────
+$('exportBtn').addEventListener('click', ()=>{
+  const region=$('region').value; const yr=parseYear($('year').value);
+  const ok=saveCurrent(region,$('year').value.trim()||'1994-95',gatherStateForSave());
+  $('saveStatus').textContent=ok?'Saved ✓ — generating .docx…':'Save failed — generating .docx anyway.';
+  setTimeout(exportDocx, 100);
+});
+
+const REGION_META = {
+  NewEngland: { full:'New England', greatRegion:'Great Region of New England', commonwealth:'COMMONWEALTH OF NEW ENGLAND', seal:'seal-newengland.png' },
+  Dixie:      { full:'Dixie',       greatRegion:'Great Region of Dixie',       commonwealth:'COMMONWEALTH OF DIXIE',       seal:'seal-dixie.png'      },
+  Pacifica:   { full:'Pacifica',    greatRegion:'Great Region of Pacifica',    commonwealth:'COMMONWEALTH OF PACIFICA',    seal:'seal-pacifica.png'   },
+  Lincoln:    { full:'Lincoln',     greatRegion:'Great Region of Lincoln',     commonwealth:'COMMONWEALTH OF LINCOLN',     seal:'seal-lincoln.png'    }
+};
+const GITHUB_RAW = 'https://raw.githubusercontent.com/rantyclarke-coder/Econ/main/';
+
+function exportDocx(){
+  const region=$('region').value;
+  const yrRaw=$('year').value.trim()||'1994-95';
+  const yr=parseYear(yrRaw);
+  const meta=REGION_META[region];
+  const sponsor=$('sponsor').value||'[Sponsor]';
+  const pv=prevYearData;
+
+  // ── XML primitives matching template exactly ──────────────────────────────────
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  // Build a run with full rPr
+  function R(text, bold=false, underline=false, size=24, color=null, font='Century Schoolbook', italic=false){
+    const f = `<w:rFonts w:ascii="${font}" w:cs="${font}" w:eastAsia="${font}" w:hAnsi="${font}"/>`;
+    const b = bold ? '<w:b w:val="1"/><w:bCs w:val="1"/>' : '';
+    const u = underline ? '<w:u w:val="single"/>' : '';
+    const i = italic ? '<w:i w:val="1"/><w:iCs w:val="1"/>' : '';
+    const c = color ? `<w:color w:val="${color}"/>` : '';
+    const sz = `<w:sz w:val="${size}"/><w:szCs w:val="${size}"/>`;
+    return `<w:r><w:rPr>${f}${b}${i}${u}${c}${sz}<w:rtl w:val="0"/></w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r>`;
+  }
+
+  // Empty run (paragraph terminator as template uses)
+  const Rend = `<w:r><w:rPr><w:rtl w:val="0"/></w:rPr></w:r>`;
+
+  // Paragraph — align: null|'center'|'left'
+  function P(runsHtml, align=null){
+    const jc = align ? `<w:jc w:val="${align}"/>` : '';
+    return `<w:p><w:pPr>${jc}<w:rPr/></w:pPr>${runsHtml}${Rend}</w:p>`;
+  }
+
+  // Blank paragraph (template style — with sz:28 rPr like template uses between sections)
+  const BLANK = ()=>`<w:p><w:pPr><w:rPr><w:sz w:val="28"/><w:szCs w:val="28"/></w:rPr></w:pPr><w:r><w:rPr><w:rtl w:val="0"/></w:rPr></w:r></w:p>`;
+  const BLANK_SM = ()=>`<w:p><w:pPr><w:rPr/></w:pPr><w:r><w:rPr><w:rtl w:val="0"/></w:rPr></w:r></w:p>`;
+
+  // Horizontal rule
+  const HR = ()=>`<w:p><w:pPr><w:jc w:val="center"/><w:rPr/></w:pPr><w:r><w:pict><v:rect style="width:0pt;height:1.5pt" o:hr="t" o:hrstd="t" o:hralign="center" fillcolor="#888888" stroked="f"/></w:pict></w:r></w:p>`;
+
+  // Seal image via external relationship
+  const SEAL = ()=>`<w:p><w:pPr><w:jc w:val="center"/><w:rPr/></w:pPr><w:r><w:pict><v:shape type="#_x0000_t75" style="width:72pt;height:72pt"><v:imagedata r:href="${GITHUB_RAW}${meta.seal}" o:title="seal"/></v:shape></w:pict></w:r></w:p>`;
+
+  // ── Number formatters ─────────────────────────────────────────────────────────
+  const fmtFull = n => (n<0?'\u2013':'')+'$'+Math.abs(Math.round(n)).toLocaleString('en-US');
+  const fmtShort = n => {
+    const sign = n<0?'\u2013':''; const abs=Math.abs(n/1e9);
+    return sign+'$'+abs.toFixed(1)+'B';
+  };
+  const fmtShort2 = n => {
+    const sign = n<0?'\u2013':''; const abs=Math.abs(n/1e9);
+    return sign+'$'+abs.toFixed(2)+'B';
+  };
+
+  // ── Delta string + color ──────────────────────────────────────────────────────
+  // isPositiveGood: true=revenue (increase=green), false=spending (increase=red)
+  function deltaInfo(current, previous, isPositiveGood){
+    if(previous==null) return {str:null, color:null};
+    const diff = current - previous;
+    const sign = diff>=0 ? '+' : '\u2013';
+    const abs = Math.abs(diff/1e9);
+    const str = sign+'$'+abs.toFixed(1)+'B';
+    let color = null;
+    if(diff>0) color = isPositiveGood ? '1A6B3C' : 'cc0000';
+    else if(diff<0) color = isPositiveGood ? 'cc0000' : '1A6B3C';
+    return {str, color};
+  }
+
+  // ── Section heading (centered, b+u, Times, sz28) ──────────────────────────────
+  const SECTION_HEAD = txt => P(R(txt, true, true, 28, null, 'Times New Roman'), 'center');
+
+  // ── Summary block: label / amount line / delta line / blank ──────────────────
+  // Template: label on own para (b+u+sz24+CS), amount on own para (nb+sz24+CS | b+sz24+Times),
+  // delta on own para (| plain + colored bold), then blank
+  function summaryBlock(label, amount, prevAmount, isPositiveGood, labelColor=null){
+    const d = deltaInfo(amount, prevAmount, isPositiveGood);
+    const deltaLine = d.str
+      ? P(R('| ',false,false,24,null,'Century Schoolbook') + R(d.str,true,false,24,d.color,'Century Schoolbook'))
+      : P(R('| \u2014',false,false,24,null,'Century Schoolbook'));
+    return [
+      P(R(label, true, true, 24, labelColor)),
+      P(R('\u2014 '+fmtFull(amount)+' | ',false,false,24,labelColor) + R(fmtShort(amount),true,false,24,labelColor,'Times New Roman')),
+      deltaLine,
+      BLANK_SM(),
+    ].join('\n');
+  }
+
+  // ── Revenue category title line ───────────────────────────────────────────────
+  // Template: "TITLE I — INCOME TAX" on own line nb+sz24+CS, then "— $x | $xB" nb|b
+  function revCatTitle(titleStr, amount){
+    return [
+      P(R(titleStr,false,false,24)),
+      P(R('\u2014 '+fmtFull(amount)+' | ',false,false,24) + R(fmtShort2(amount),true,false,24)),
+    ].join('\n');
+  }
+
+  // ── Revenue sub-item: label line + delta/rate line ────────────────────────────
+  // Template: "I A. | Lower Class " on own line (b+sz24), "| $0 – $2,000" on SAME line (nb smaller)
+  // Then "— " + colored delta + " | rate%" on next line
+  function revItem(prefix, label, rangeStr, currentRate, prevRate){
+    const diff = prevRate!=null ? currentRate-prevRate : null;
+    const diffStr = diff!=null ? (diff>=0?'+':'\u2013')+Math.abs(diff).toFixed(2)+'%' : null;
+    const diffColor = diff!=null && diff!==0 ? (diff>0?'cc0000':'1A6B3C') : null;
+    const rateStr = ' | '+currentRate.toFixed(2)+'%';
+
+    // Line 1: prefix + label only (bold)
+    const line1 = P(R(prefix+' | '+label, true,false,24));
+    // Line 2: range on its own line (normal, slight indent via leading space)
+    const line2 = P(R(' '+rangeStr, false,false,22));
+    // Line 3: delta + rate
+    let line3;
+    if(diffStr && diff!==0){
+      line3 = P(R('\u2014 ',false,false,24) + R(diffStr,true,false,24,diffColor) + R(rateStr,true,false,24));
+    } else {
+      line3 = P(R('\u2014 0.0%'+rateStr,false,false,24));
+    }
+    return [line1, line2, line3, BLANK_SM()].join('\n');
+  }
+
+  // ── Dept block: title (b+u) / amount / delta para / blank / description ───────
+  function deptBlock(dept, amountVal, prevAmountVal, descText){
+    const d = deltaInfo(amountVal, prevAmountVal, true); // spending: increase=good(green)
+    const deltaLine = d.str
+      ? P(R('|',true,false,24) + R(' ',false,false,24) + R(d.str,true,false,24,d.color))
+      : P(R('| \u2014',true,false,24));
+    return [
+      P(R('TITLE '+dept.title+' \u2014 '+dept.name, true, true, 24)),
+      P(R('\u2014 '+fmtFull(amountVal)+' | ',false,false,24) + R(fmtShort2(amountVal),true,false,24)),
+      deltaLine,
+      BLANK_SM(),
+      P(R('\u2014',false,false,24)),
+      P(R(descText||'',false,false,20)),
+      BLANK(),
+    ].join('\n');
+  }
+
+  // ── XII sub-item: "XII A. | Label" / "— +$xB | $x,xxx,xxx" ──────────────────
+  function xiiItem(prefix, label, amount, prevAmount){
+    const d = deltaInfo(amount, prevAmount, true); // spending: increase=green
+    const diffStr = d.str || '$0.0B';
+    return [
+      P(R(prefix+' | '+label, true,false,24)),
+      P(R('\u2014 ',true,false,24) + R(diffStr,true,false,24,d.color||undefined) + R(' | '+fmtFull(amount),true,false,24)),
+      BLANK_SM(),
+    ].join('\n');
+  }
+
+  // ── Gather all numbers ────────────────────────────────────────────────────────
+  const TAX_ROWS = getTaxRows();
+  const rateMap = {};
+  TAX_ROWS.forEach(r=>{ const el=document.getElementById('rate_'+r.id); if(el) rateMap[r.id]=parseFloat(el.value)||0; });
+
+  let income=0, corp=0, sales_G=0, sales_A=0, sales_T=0, serv_GS=0, serv_S=0, serv_CG=0;
+  TAX_ROWS.forEach(r=>{
+    const rate=rateMap[r.id]/100;
+    if(r.cat==='income')      income  += incomeBaseFig(region,yr,r.id)*rate;
+    else if(r.cat==='corp')   corp    += corpBaseFig(region,yr,r.id)*rate;
+    else if(r.id==='sales_Gasoline')    sales_G  = salesBaseFig(region,yr,'Gasoline')*rate;
+    else if(r.id==='sales_Alcohol')     sales_A  = salesBaseFig(region,yr,'Alcohol')*rate;
+    else if(r.id==='sales_Tobacco')     sales_T  = salesBaseFig(region,yr,'Tobacco')*rate;
+    else if(r.id==='serv_GeneralSales') serv_GS  = servicesBaseFig(region,yr,'GeneralSales')*rate;
+    else if(r.id==='serv_Services')     serv_S   = servicesBaseFig(region,yr,'Services')*rate;
+    else if(r.id==='serv_CapitalGains') serv_CG  = servicesBaseFig(region,yr,'CapitalGains')*rate;
+  });
+  const grants = 0.18*(income+corp);
+  const totalRevenue = income+corp+sales_G+sales_A+sales_T+serv_GS+serv_S+serv_CG+grants;
+
+  let deptTotal=0;
+  DEPT_ROWS.forEach(r=>{ deptTotal+=(parseFloat($(r.id).value)||0)*1e9; });
+  const customTotal = customPrograms.reduce((s,p)=>s+(p.amount||0),0)*1e9;
+  const priorDebt = (parseFloat($('priorDebt').value)||0)*1e9;
+  const intRate = parseFloat($('interestRate').value)||0;
+  const netInterest = priorDebt*(intRate/100);
+  const operatingExpenditure = deptTotal+customTotal+netInterest;
+  const actualBalance = totalRevenue-operatingExpenditure;
+  const payDownDebt = actualBalance>0?actualBalance:0;
+  const totalExp = operatingExpenditure+payDownDebt;
+  const newDebt = priorDebt-actualBalance;
+
+  // Prev year totals
+  let prevRevTotal = null;
+  let prevExpTotal = null;
+  let prevDebtTotal = null;
+  if(pv){
+    let pi=0,pc=0,ps=0,psv=0;
+    getTaxRows().forEach(r=>{
+      const rate=(pv.rates&&pv.rates[r.id]||0)/100;
+      if(r.cat==='income') pi+=incomeBaseFig(region,yr-1,r.id)*rate;
+      else if(r.cat==='corp') pc+=corpBaseFig(region,yr-1,r.id)*rate;
+      else if(r.cat==='sales'){ const c=r.id.split('_')[1]; ps+=salesBaseFig(region,yr-1,c)*rate; }
+      else{ const c=r.id.split('_')[1]; psv+=servicesBaseFig(region,yr-1,c)*rate; }
+    });
+    prevRevTotal = pi+pc+ps+psv+(pv.grants||0);
+    if(pv.depts) prevExpTotal = Object.values(pv.depts).reduce((s,v)=>s+v*1e9,0);
+    if(pv.priorDebt) prevDebtTotal = pv.priorDebt*1e9;
+  }
+
+  // ── Assemble paragraphs ───────────────────────────────────────────────────────
+  const PS = [];
+
+  // Cover
+  PS.push(BLANK());
+  // Seal omitted — external image refs break Google Docs
+  PS.push(P(R('The '+meta.full+' Omnibus Budget Act For FY '+yrRaw, true,false,48,'000000','Times New Roman'), 'center'));
+  PS.push(P(R('\u23AF'.repeat(31),true,false,28,null,'Times New Roman'), 'center'));
+  PS.push(BLANK());
+  PS.push(P(R('IN THE STATE LEGISLATURE OF THE',true,false,28,null,'Times New Roman'), 'center'));
+  PS.push(P(R(' '+meta.commonwealth+' ',true,false,28,null,'Times New Roman'), 'center'));
+  PS.push(BLANK());
+  PS.push(P(R('Submitted by',true,true,22,null,'Times New Roman')+R(': '+sponsor,true,false,22,null,'Times New Roman'), 'center'));
+  PS.push(P(R('Co-Sponsor',true,true,22,null,'Times New Roman')+R('(s): \u2014',true,false,22,null,'Times New Roman'), 'center'));
+  PS.push(P(R('\u23AF'.repeat(31),true,false,28,null,'Times New Roman'), 'center'));
+  PS.push(BLANK());
+  PS.push(P(R('AN ACT',true,false,48,null,'Times New Roman'), 'center'));
+  PS.push(BLANK());
+  PS.push(P(R('To provide appropriations for the agencies and departments of the '+meta.greatRegion+' for the fiscal year ending September 30, '+yrRaw.slice(-2)+', and for other purposes.',false,false,22,null,'Times New Roman',true), 'center'));
+  PS.push(BLANK());
+  PS.push(HR());
+  PS.push(BLANK());
+
+  // Section I
+  PS.push(SECTION_HEAD('SECTION I: SHORT TITLE'));
+  PS.push(BLANK());
+  PS.push(P(R('This Act shall be formally known as the \u201CThe '+meta.full+' Omnibus Budget for FY '+yrRaw+'\u201D.',false,false,24,null,'Times New Roman')));
+  PS.push(BLANK());
+
+  // Section II
+  PS.push(SECTION_HEAD('SECTION II: FISCAL YEAR'));
+  PS.push(BLANK());
+  PS.push(P(
+    R('For purposes of this Act, the term \u201C',false,false,24,null,'Times New Roman')+
+    R('FY '+yrRaw,true,false,24,null,'Times New Roman')+
+    R('\u201D shall mean the period commencing on ',false,false,24,null,'Times New Roman')+
+    R('October 1, '+yr,true,false,24,null,'Times New Roman')+
+    R(', and ending on ',false,false,24,null,'Times New Roman')+
+    R('September 30, '+(yr+1),true,false,24,null,'Times New Roman')+
+    R('.',false,false,24,null,'Times New Roman')
+  ));
+  PS.push(P(R('All funds appropriated, revenues generated, and expenditures authorized herein shall be accounted for within such fiscal year, except as otherwise provided by law. ',false,false,24,null,'Times New Roman')));
+  PS.push(BLANK());
+
+  // Section III
+  PS.push(SECTION_HEAD('SECTION III: SUMMARY'));
+  PS.push(BLANK());
+  const balLabel = actualBalance>=0 ? 'SURPLUS' : 'DEFICIT';
+  const balColor = actualBalance>=0 ? '1A6B3C' : 'B3261E';
+  // For surplus/deficit: increase in surplus=good, increase in deficit=bad
+  const prevBalAbs = prevRevTotal!=null&&prevExpTotal!=null ? Math.abs(prevRevTotal-prevExpTotal) : null;
+  PS.push(summaryBlock(balLabel, Math.abs(actualBalance), prevBalAbs, actualBalance>=0, balColor));
+  PS.push(summaryBlock('TOTAL REVENUE', totalRevenue, prevRevTotal, true));
+  PS.push(summaryBlock('TOTAL EXPENDITURE', totalExp, prevExpTotal, false));
+  PS.push(summaryBlock('REGIONAL DEBT', newDebt, prevDebtTotal, false));
+  PS.push(BLANK());
+
+  // Section IV
+  PS.push(SECTION_HEAD('SECTION IV: REVENUE'));
+  PS.push(BLANK());
+
+  // Title I — Income Tax
+  PS.push(revCatTitle('TITLE I \u2014 INCOME TAX', income));
+  bracketConfig.income.forEach((b,i)=>{
+    const letter=String.fromCharCode(65+i);
+    const rangeStr='| $'+b.lo.toLocaleString('en-US')+' \u2013 '+(b.hi?'$'+b.hi.toLocaleString('en-US'):'No Limit');
+    PS.push(revItem('I '+letter, b.label, rangeStr, rateMap[b.id]||0, pv&&pv.rates?pv.rates[b.id]:null));
+  });
+  PS.push(BLANK_SM());
+
+  // Title II — Corporate Tax
+  PS.push(revCatTitle('TITLE II \u2014 CORPORATE TAX', corp));
+  bracketConfig.corp.forEach((b,i)=>{
+    const letter=String.fromCharCode(65+i);
+    const rangeStr='| $'+b.lo.toLocaleString('en-US')+' \u2013 '+(b.hi?'$'+b.hi.toLocaleString('en-US'):'No Limit');
+    PS.push(revItem('II '+letter, b.label, rangeStr, rateMap[b.id]||0, pv&&pv.rates?pv.rates[b.id]:null));
+  });
+  PS.push(BLANK_SM());
+
+  // Title III — Capital Gains
+  PS.push(revCatTitle('TITLE III \u2014 CAPITAL GAINS TAX', serv_CG));
+  PS.push(revItem('III A', 'Capital Gains Tax', '| Long Term', rateMap['serv_CapitalGains']||0, pv&&pv.rates?pv.rates['serv_CapitalGains']:null));
+  PS.push(BLANK_SM());
+
+  // Title IV — Excise Tax
+  PS.push(revCatTitle('TITLE IV \u2014 EXCISE TAX', sales_G+sales_A+sales_T));
+  PS.push(revItem('IV A', 'Excise Tax', '| Gasoline', rateMap['sales_Gasoline']||0, pv&&pv.rates?pv.rates['sales_Gasoline']:null));
+  PS.push(revItem('IV B', 'Excise Tax', '| Alcohol',  rateMap['sales_Alcohol']||0,  pv&&pv.rates?pv.rates['sales_Alcohol']:null));
+  PS.push(revItem('IV C', 'Excise Tax', '| Tobacco',  rateMap['sales_Tobacco']||0,  pv&&pv.rates?pv.rates['sales_Tobacco']:null));
+  PS.push(BLANK_SM());
+
+  // Title V — Services Tax
+  PS.push(revCatTitle('TITLE V \u2014 SERVICES TAX', serv_GS+serv_S));
+  PS.push(revItem('V A', 'Services Tax', '| Goods & Commodities', rateMap['serv_GeneralSales']||0, pv&&pv.rates?pv.rates['serv_GeneralSales']:null));
+  PS.push(revItem('V B', 'Services Tax', '| Service Industry',    rateMap['serv_Services']||0,     pv&&pv.rates?pv.rates['serv_Services']:null));
+  PS.push(BLANK_SM());
+
+  // Title VI — Federal Grants
+  PS.push(revCatTitle('TITLE VI \u2014 FEDERAL GRANTS', grants));
+  PS.push(P(R('\u2014 ',false,false,24)));
+  PS.push(P(R('Federal grants received from the Federal Government under various fiscal assistance schemes and inter-governmental transfer programs.',false,false,24)));
+  PS.push(BLANK());
+
+  // Section V — Expenditures
+  PS.push(SECTION_HEAD('SECTION V: EXPENDITURES'));
+  PS.push(BLANK());
+  DEPT_ROWS.forEach(dept=>{
+    const amountVal=(parseFloat($(dept.id).value)||0)*1e9;
+    const prevAmountVal=pv&&pv.depts&&pv.depts[dept.id]!=null?pv.depts[dept.id]*1e9:null;
+    const descEl=document.getElementById('desc_'+dept.id);
+    const descText=descEl?descEl.value:dept.desc;
+    PS.push(deptBlock(dept, amountVal, prevAmountVal, descText));
+  });
+
+  // Title XII — Other Expenses
+  const otherTotal=customTotal+netInterest+payDownDebt;
+  const prevNetInterest=pv&&pv.priorDebt&&pv.interestRate?pv.priorDebt*1e9*(pv.interestRate/100):null;
+  PS.push(P(R('TITLE XII \u2014 OTHER EXPENSES',true,true,24)));
+  PS.push(P(R('\u2014 '+fmtFull(otherTotal)+' | ',false,false,24)+R(fmtShort2(otherTotal),true,false,24)));
+  PS.push(P(R('| \u2014',true,false,24)));
+  PS.push(BLANK_SM());
+  PS.push(xiiItem('XII A','Net Interest On Debt', netInterest, prevNetInterest));
+  customPrograms.forEach((p,i)=>{
+    PS.push(xiiItem('XII '+String.fromCharCode(66+i), p.name||'Custom Program', (p.amount||0)*1e9, null));
+  });
+  PS.push(xiiItem('XII Z','Debt Repayment', payDownDebt, null));
+
+  // Footer
+  PS.push(BLANK());
+  PS.push(HR());
+  PS.push(BLANK());
+  PS.push(P(R(meta.commonwealth+'  ',true,false,22,null,'Times New Roman'), 'center'));
+
+  // ── Build ZIP ─────────────────────────────────────────────────────────────────
+  const sealRel=''; // External image refs break Google Docs — omitted
+
+  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">
+  <w:body>
+${PS.join('\n')}
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+  const contentTypes=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+  const pkgRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+  const wordRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`;
+
+  function doZip(){
+    const zip=new JSZip();
+    zip.file('[Content_Types].xml', contentTypes);
+    zip.folder('_rels').file('.rels', pkgRels);
+    const word=zip.folder('word');
+    word.file('document.xml', docXml);
+    word.folder('_rels').file('document.xml.rels', wordRels);
+    zip.generateAsync({type:'base64'})
+      .then(b64=>{
+        const mime='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        const url='data:'+mime+';base64,'+b64;
+        const a=document.createElement('a');
+        a.href=url;
+        a.download=meta.full.replace(/ /g,'_')+'_Budget_FY'+yrRaw.replace(/[^a-zA-Z0-9]/g,'_')+'.docx';
+        document.body.appendChild(a); a.click();
+        setTimeout(()=>{ document.body.removeChild(a); }, 300);
+        $('saveStatus').textContent += ' — Download started ✓';
+      }).catch(err=>{
+        console.error('ZIP error:',err);
+        $('saveStatus').textContent += ' — ZIP error: '+err.message;
+      });
+  }
+
+  if(typeof JSZip==='undefined'){
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload=doZip; s.onerror=()=>{ $('saveStatus').textContent+=' — Failed to load JSZip.'; };
+    document.head.appendChild(s);
+  } else {
+    doZip();
+  }
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────────
+buildRevenueSection();
+buildExpenditureSection();
+render(); // immediate render with defaults
+
+['region','year'].forEach(id=>$(id).addEventListener('input',()=>refreshPrevYear()));
+$('region').addEventListener('change',()=>{
+  $('priorDebt').value=DEBT_DEFAULTS[$('region').value];
+  refreshPrevYear();
+});
+['priorDebt','interestRate'].forEach(id=>$(id).addEventListener('input',render));
+
+$('accountIcon').addEventListener('click',()=>{
+  const pw=prompt('Enter password:');
+  if(pw==='a1b2c3d4e5fuck'){ $('masterPanel').style.display='block'; $('masterPanel').scrollIntoView({behavior:'smooth'}); }
+  else if(pw!==null) alert('Incorrect password.');
+});
+$('genStatsBtn').addEventListener('click',()=>{ alert('Statistics generation — not yet implemented.'); });
+
+// Load ledger and refresh — storage errors never break the form
+try{
+  ledgerData=loadLedger();
+  refreshPrevYear();
+}catch(e){
+  console.warn('Ledger load error:',e);
+  render();
+}
+</script>
+</body>
+</html>
