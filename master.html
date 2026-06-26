@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROA — Budget Ledger</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,600;0,700;1,400&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#1A2744; --navy2:#243358; --gold:#C8A84B; --red:#B3261E;
+  --green:#1A6B3C; --white:#FFFFFF; --off:#F7F8FA; --line:#D4D8E0;
+  --grey:#6B7280; --black:#0F1117; --cell:#FFFFFF; --head:#EEF0F5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--off);color:var(--black);font-size:13px;}
+
+/* ── HEADER ── */
+.topbar{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;gap:16px;}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.topbar-brand svg{width:32px;height:24px;}
+.topbar-brand span{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;letter-spacing:1px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.btn{padding:6px 14px;font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;gap:5px;}
+.btn-save{background:var(--gold);color:var(--navy);}
+.btn-save:hover{background:#d4b45a;}
+.btn-export{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);}
+.btn-export:hover{background:rgba(255,255,255,0.25);}
+.btn-unhide{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.2);font-size:11px;}
+.status-msg{font-size:11px;color:rgba(255,255,255,0.6);font-style:italic;}
+
+/* ── REGION TABS ── */
+.region-tabs{display:flex;background:var(--navy2);border-bottom:3px solid var(--gold);}
+.region-tab{padding:10px 22px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.5px;color:rgba(255,255,255,0.55);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-3px;transition:all 0.15s;user-select:none;}
+.region-tab:hover{color:rgba(255,255,255,0.85);}
+.region-tab.active{color:#fff;border-bottom-color:var(--gold);}
+
+/* ── TABLE WRAPPER ── */
+.table-wrap{overflow-x:auto;padding:0 0 60px;}
+table{border-collapse:collapse;width:100%;}
+
+/* ── FROZEN COLS ── */
+td.label-cell,th.label-cell{position:sticky;left:0;z-index:2;background:var(--cell);min-width:190px;max-width:190px;}
+td.bracket-cell,th.bracket-cell{position:sticky;left:190px;z-index:2;background:var(--cell);min-width:100px;max-width:100px;}
+tr.section-head td.label-cell,tr.section-head th.label-cell{background:var(--navy);}
+tr.sub-head td.label-cell,tr.sub-head th.label-cell,
+tr.sub-head td.bracket-cell,tr.sub-head th.bracket-cell{background:var(--head);}
+tr.cat-head td.label-cell,tr.cat-head th.label-cell,
+tr.cat-head td.bracket-cell,tr.cat-head th.bracket-cell{background:#E8EBF2;}
+tr.total-row td.label-cell,tr.total-row th.label-cell,
+tr.total-row td.bracket-cell,tr.total-row th.bracket-cell{background:#F0F2F8;}
+tr.summary-row td.label-cell,tr.summary-row th.label-cell,
+tr.summary-row td.bracket-cell,tr.summary-row th.bracket-cell{background:#E8EBF2;}
+tr.stat-row td.label-cell,tr.stat-row th.label-cell,
+tr.stat-row td.bracket-cell,tr.stat-row th.bracket-cell{background:var(--head);}
+tr.nobud-row td.label-cell{background:#FEF9EC;}
+
+/* ── CELLS ── */
+td,th{border:1px solid var(--line);padding:0;}
+td.label-cell{padding:5px 10px;font-size:12px;color:var(--black);white-space:nowrap;}
+td.label-cell.indent{padding-left:22px;color:#374151;}
+td.bracket-cell{padding:4px 8px;font-size:11px;color:var(--grey);font-style:italic;}
+td.data-cell{background:var(--cell);padding:0;min-width:90px;}
+td.data-cell input{width:100%;height:100%;border:none;outline:none;padding:5px 8px;font-family:'Barlow',sans-serif;font-size:12px;color:var(--black);background:transparent;text-align:right;}
+td.data-cell input:focus{background:#FFFBE6;outline:2px solid var(--gold);outline-offset:-1px;}
+td.data-cell input[readonly]{color:var(--grey);background:var(--head);}
+td.pct-cell{padding:5px 8px;text-align:right;font-size:11px;font-weight:600;background:var(--head);white-space:nowrap;min-width:70px;}
+td.pct-cell.pos{color:var(--green);}
+td.pct-cell.neg{color:var(--red);}
+td.pct-cell.neutral{color:var(--grey);}
+td.year-header{padding:5px 8px;text-align:center;font-size:11px;font-weight:700;background:var(--navy2);color:rgba(255,255,255,0.9);white-space:nowrap;min-width:90px;}
+td.year-header.current-year{background:var(--navy);color:var(--gold);}
+
+/* ── HEADER ROWS ── */
+tr.section-head td{background:var(--navy);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;padding:8px 12px;text-align:center;border-color:var(--navy);}
+tr.sub-head td{background:var(--head);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--grey);padding:5px 10px;border-color:var(--line);}
+tr.sub-head td.col-head{text-align:right;padding-right:8px;}
+tr.cat-head td{background:#E8EBF2;font-weight:700;font-size:12px;color:var(--navy);padding:6px 10px;border-color:var(--line);}
+tr.total-row td{background:#F0F2F8;font-weight:700;font-size:12px;}
+tr.total-row td.label-cell{color:var(--navy);}
+tr.summary-row td{background:#E8EBF2;font-weight:700;}
+tr.blank-row td{height:8px;background:var(--off);border:none;}
+tr.stat-row td.label-cell{font-weight:600;color:var(--navy2);}
+tr.nobud-row{background:#FEF9EC;}
+tr.nobud-row td{font-size:11px;color:#78350F;padding:3px 8px;font-style:italic;}
+
+/* ── STATS CARDS ── */
+.stats-panel{display:flex;flex-wrap:wrap;gap:10px;padding:14px 16px;background:#fff;border-top:2px solid var(--gold);}
+.stat-card{border:1px solid var(--line);padding:10px 14px;background:var(--off);min-width:140px;flex:1;}
+.stat-card .s-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--grey);margin-bottom:3px;}
+.stat-card .s-value{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--navy);}
+.stat-card .s-sub{font-size:10px;color:var(--grey);margin-top:1px;}
+.stat-card.leading .s-value{color:var(--green);}
+.stat-card.lagging .s-value{color:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <svg viewBox="0 0 60 40">
+      <polygon points="0,30 22,30 30,18 8,18" fill="#B3261E"/>
+      <polygon points="6,22 28,22 36,10 14,10" fill="#4A6FBF"/>
+      <polygon points="12,14 34,14 42,2 20,2" fill="#B3261E"/>
+    </svg>
+    <span>PROA BUDGET LEDGER</span>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-unhide" id="unhideBtn">Show All Years</button>
+    <button class="btn btn-save" id="saveBtn">💾 Save</button>
+    <span class="status-msg" id="statusMsg"></span>
+  </div>
+</div>
+
+<!-- REGION TABS -->
+<div class="region-tabs">
+  <div class="region-tab active" data-region="NewEngland">New England</div>
+  <div class="region-tab" data-region="Dixie">Dixie</div>
+  <div class="region-tab" data-region="Pacifica">Pacifica</div>
+  <div class="region-tab" data-region="Lincoln">Lincoln</div>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table id="ledgerTable"><tbody id="tableBody"></tbody></table>
+</div>
+
+<!-- STATS PANEL -->
+<div class="stats-panel" id="statsPanel"></div>
+
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────────────────────
+const REGIONS = ['NewEngland','Dixie','Pacifica','Lincoln'];
+const REGION_LABELS = {NewEngland:'New England',Dixie:'Dixie',Pacifica:'Pacifica',Lincoln:'Lincoln'};
+const GDP_1991 = {NewEngland:1.40,Dixie:1.10,Pacifica:0.90,Lincoln:0.70};
+const GROWTH_RATE = {NewEngland:0.029,Dixie:0.022,Pacifica:0.024,Lincoln:0.012};
+const DEBT_DEFAULTS = {NewEngland:648,Dixie:509,Pacifica:418,Lincoln:325};
+const FISCAL_YEARS = [];
+for(let y=1993;y<=2019;y+=2) FISCAL_YEARS.push(y+'-'+(String(y+1).slice(-2)));
+
+const TAX_ROWS = [
+  {id:'inc_Lower',  label:'Lower Class',   bracket:'$0 – $8k',    cat:'income'},
+  {id:'inc_Middle', label:'Middle Class',  bracket:'$8k – $25k',  cat:'income'},
+  {id:'inc_Upper',  label:'Upper Class',   bracket:'$25k+',       cat:'income'},
+  {id:'corp_Small', label:'Small & Medium',bracket:'$0 – $50k',   cat:'corp'},
+  {id:'corp_Large', label:'Large Business',bracket:'$50k+',       cat:'corp'},
+  {id:'sales_Gasoline',label:'Gasoline',   bracket:'',            cat:'excise'},
+  {id:'sales_Alcohol', label:'Alcohol',    bracket:'',            cat:'excise'},
+  {id:'sales_Tobacco', label:'Tobacco',    bracket:'',            cat:'excise'},
+  {id:'serv_GeneralSales',label:'Gen. Sales',bracket:'',          cat:'services'},
+  {id:'serv_Services',    label:'Services', bracket:'',           cat:'services'},
+  {id:'serv_CapitalGains',label:'Cap. Gains',bracket:'Long Term', cat:'services'},
+];
+
+const DEPT_ROWS = [
+  {id:'expEducation', label:'Education'},
+  {id:'expHealth',    label:'Health & Human Svcs'},
+  {id:'expTransport', label:'Transportation'},
+  {id:'expSafety',    label:'Public Safety'},
+  {id:'expJustice',   label:'Justice'},
+  {id:'expHUD',       label:'Housing & Urban Dev.'},
+  {id:'expLabour',    label:'Commerce & Labour'},
+  {id:'expAg',        label:'Food & Agriculture'},
+  {id:'expTreasury',  label:'Treasury'},
+  {id:'expAdmin',     label:'General Admin'},
+  {id:'expSocial',    label:'Social Services'},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentRegion = 'NewEngland';
+let allData = {};   // allData[region][yearStr][field] = value
+let noBudgetFlags = {};
+let hiddenCols = true;
+const STORAGE_KEY = 'proa_ledger_allData';
+const NOBUD_KEY   = 'proa_ledger_noBudgetFlags';
+
+// ── LOCALSTORAGE ──────────────────────────────────────────────────────────────
+function saveToStorage(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
+    localStorage.setItem(NOBUD_KEY, JSON.stringify(noBudgetFlags));
+    return true;
+  }catch(e){ console.error('Save error',e); return false; }
+}
+
+function loadFromStorage(){
+  try{
+    const d=localStorage.getItem(STORAGE_KEY);
+    if(d) allData=JSON.parse(d);
+    const f=localStorage.getItem(NOBUD_KEY);
+    if(f) noBudgetFlags=JSON.parse(f);
+  }catch(e){ console.warn('Load error',e); }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function parseYear(str){ const m=(str||'').match(/(\d{4})/); return m?parseInt(m[1]):1993; }
+function prevFY(str){ const y=parseYear(str); return (y-2)+'-'+(String(y-1).slice(-2)); }
+function fmtNum(n,d=2){ if(n==null||isNaN(n)) return ''; return Number(n).toFixed(d); }
+function fmtPct(cur,prev){
+  if(cur==null||prev==null||prev==0) return {str:'—',cls:'neutral'};
+  const p=((cur-prev)/Math.abs(prev))*100;
+  if(Math.abs(p)<0.01) return {str:'0.00%',cls:'neutral'};
+  return {str:(p>0?'+':'')+p.toFixed(1)+'%', cls:p>0?'pos':'neg'};
+}
+function regionGDP(region,yr){ return GDP_1991[region]*Math.pow(1+GROWTH_RATE[region],yr-1991); }
+function getData(region,yearStr,field){ return allData[region]&&allData[region][yearStr]?allData[region][yearStr][field]:null; }
+function setData(region,yearStr,field,val){
+  if(!allData[region]) allData[region]={};
+  if(!allData[region][yearStr]) allData[region][yearStr]={};
+  allData[region][yearStr][field]=val;
+}
+
+// ── ECON ENGINE ───────────────────────────────────────────────────────────────
+const CONSUMPTION_SHARE=0.65;
+const SALES_SHARE={Gasoline:0.04,Alcohol:0.015,Tobacco:0.01};
+const SERVICES_SHARE={GeneralSales:0.20,Services:0.15};
+const CAPGAINS_SHARE=0.03;
+const INCOME_DIST={Lower:0.35,Middle:0.45,Upper:0.20};
+const CORP_DIST={Small:0.40,Large:0.60};
+
+function estimateTaxBase(region,yr,rowId){
+  const gdp=regionGDP(region,yr)*1e12;
+  if(rowId==='inc_Lower')  return gdp*0.55*INCOME_DIST.Lower;
+  if(rowId==='inc_Middle') return gdp*0.55*INCOME_DIST.Middle;
+  if(rowId==='inc_Upper')  return gdp*0.55*INCOME_DIST.Upper;
+  if(rowId==='corp_Small') return gdp*0.12*CORP_DIST.Small;
+  if(rowId==='corp_Large') return gdp*0.12*CORP_DIST.Large;
+  if(rowId==='sales_Gasoline') return gdp*CONSUMPTION_SHARE*SALES_SHARE.Gasoline;
+  if(rowId==='sales_Alcohol')  return gdp*CONSUMPTION_SHARE*SALES_SHARE.Alcohol;
+  if(rowId==='sales_Tobacco')  return gdp*CONSUMPTION_SHARE*SALES_SHARE.Tobacco;
+  if(rowId==='serv_GeneralSales')  return gdp*CONSUMPTION_SHARE*SERVICES_SHARE.GeneralSales;
+  if(rowId==='serv_Services')      return gdp*CONSUMPTION_SHARE*SERVICES_SHARE.Services;
+  if(rowId==='serv_CapitalGains')  return gdp*CAPGAINS_SHARE;
+  return 0;
+}
+
+function computeSummary(region,yearStr){
+  const yr=parseYear(yearStr);
+  const d=allData[region]&&allData[region][yearStr]?allData[region][yearStr]:{};
+  let income=0,corp=0,excise=0,services=0;
+  TAX_ROWS.forEach(r=>{
+    const rate=(parseFloat(d[r.id+'_rate'])||0)/100;
+    const base=estimateTaxBase(region,yr,r.id);
+    const rev=base*rate;
+    if(r.cat==='income') income+=rev;
+    else if(r.cat==='corp') corp+=rev;
+    else if(r.cat==='excise') excise+=rev;
+    else if(r.cat==='services') services+=rev;
+  });
+  const grants=0.18*(income+corp);
+  const totalRevenue=income+corp+excise+services+grants;
+  let deptTotal=0;
+  DEPT_ROWS.forEach(r=>{ deptTotal+=(parseFloat(d[r.id])||0)*1e9; });
+  const priorDebt=(parseFloat(d['prevDebt'])||DEBT_DEFAULTS[region])*1e9;
+  const interestRate=parseFloat(d['interestRate'])||4;
+  const netInterest=priorDebt*(interestRate/100);
+  const operatingExp=deptTotal+netInterest;
+  const balance=totalRevenue-operatingExp;
+  const payDown=balance>0?balance:0;
+  const totalExp=operatingExp+payDown;
+  const totalDebt=priorDebt-balance;
+  return {income,corp,excise,services,grants,totalRevenue,deptTotal,netInterest,operatingExp,totalExp,balance,totalDebt,payDown,interestRate,priorDebt};
+}
+
+function computeStats(region,yearStr){
+  const yr=parseYear(yearStr);
+  const prevYr=prevFY(yearStr);
+  const d=allData[region]&&allData[region][yearStr]?allData[region][yearStr]:{};
+  const prevD=allData[region]&&allData[region][prevYr]?allData[region][prevYr]:{};
+  const s=computeSummary(region,yearStr);
+  const gdpBase=regionGDP(region,yr)*1e12;
+  const spendPct=s.totalExp/gdpBase;
+  const gdpBoost=0.30*spendPct;
+  const deficitDrag=s.balance<0?Math.abs(s.balance)/gdpBase*0.15:0;
+  const nobud=noBudgetFlags[region]&&noBudgetFlags[region][yearStr];
+  const debuffDrag=nobud?(nobud.consecutive||1)*0.005:0;
+  const gdp=gdpBase*(1+gdpBoost-deficitDrag-debuffDrag);
+  const baseUnemployment=10.0-(yr-1991)*0.25;
+  const labourSpend=(parseFloat(d['expLabour'])||0)*1e9;
+  const labourEffect=Math.min(3,(labourSpend/gdpBase)*100*8);
+  const corpTax=(parseFloat(d['corp_Large_rate'])||21)/100;
+  const corpDrag=corpTax*5;
+  const unemployment=Math.max(2,baseUnemployment-labourEffect+corpDrag-gdpBoost*10);
+  const socialSpend=((parseFloat(d['expSocial'])||0)+(parseFloat(d['expHealth'])||0)+(parseFloat(d['expEducation'])||0))*1e9;
+  const socialEffect=Math.min(4,(socialSpend/gdpBase)*100*6);
+  const basePoverty=14.0-(yr-1993)*0.2;
+  const poverty=Math.max(3,basePoverty-socialEffect+unemployment*0.3);
+  const gdpPerCapita=gdp/(3e7*(gdpBase/4.1e12));
+  const avgIncome=gdpPerCapita*0.72*(1-0.015*((parseFloat(d['inc_Middle_rate'])||15)/100*100-10));
+  const hudSpend=(parseFloat(d['expHUD'])||0)*1e9;
+  const hudEffect=Math.min(800,(hudSpend/gdpBase)*100*4000);
+  const salesTaxBurden=(parseFloat(d['serv_GeneralSales_rate'])||18)/100*5000;
+  const baseCOL=12000+(yr-1991)*350;
+  const costOfLiving=Math.max(8000,baseCOL-hudEffect+salesTaxBurden+deficitDrag*50000);
+  let leading='—',lagging='—',maxChg=-Infinity,minChg=Infinity;
+  DEPT_ROWS.forEach(r=>{
+    const cur=parseFloat(d[r.id])||0; const prev=parseFloat(prevD[r.id])||0;
+    if(prev>0){
+      const chg=(cur-prev)/prev*100;
+      if(chg>maxChg){ maxChg=chg; leading=r.label; }
+      if(chg<minChg){ minChg=chg; lagging=r.label; }
+    }
+  });
+  return {gdp,unemployment:unemployment.toFixed(1),poverty:poverty.toFixed(1),avgIncome:Math.round(avgIncome),costOfLiving:Math.round(costOfLiving),totalDebt:s.totalDebt,leading,lagging};
+}
+
+// ── TABLE BUILD ───────────────────────────────────────────────────────────────
+function getVisibleYears(){
+  if(!hiddenCols) return FISCAL_YEARS;
+  // Show last 3 years
+  return FISCAL_YEARS.slice(-3);
+}
+
+function cellId(region,yearStr,field){ return 'c_'+region+'_'+yearStr.replace(/[^a-z0-9]/gi,'_')+'_'+field; }
+
+function makeInput(region,yearStr,field,readonly=false,step='0.01',placeholder='—'){
+  const val=getData(region,yearStr,field);
+  const display=val!=null?fmtNum(val):'';
+  return `<input type="number" id="${cellId(region,yearStr,field)}" value="${display}"
+    step="${step}" ${readonly?'readonly':''} placeholder="${placeholder}"
+    data-region="${region}" data-year="${yearStr}" data-field="${field}">`;
+}
+
+function buildTable(){
+  const region=currentRegion;
+  const years=getVisibleYears();
+  const prevYr=years.length>=2?years[years.length-2]:null;
+  const curYr=years[years.length-1];
+  let html='';
+  const colspan=2+years.length+(prevYr?1:0);
+
+  // ── Year header row ──
+  html+=`<tr><td class="label-cell" style="background:var(--navy2);color:#fff;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Category</td>`;
+  html+=`<td class="bracket-cell" style="background:var(--navy2);color:rgba(255,255,255,0.6);font-size:10px;">Detail</td>`;
+  years.forEach(y=>{
+    const isCur=y===curYr;
+    html+=`<td class="year-header${isCur?' current-year':''}">${y}</td>`;
+  });
+  if(prevYr) html+=`<td class="year-header" style="background:#374151;font-size:10px;">Δ vs prev</td>`;
+  html+='</tr>';
+
+  // ── TAXATION section ──
+  html+=`<tr class="section-head"><td colspan="${colspan}">TAXATION — TAX RATES (%)</td></tr>`;
+
+  const taxCats=[
+    {key:'income', label:'INCOME TAX'},
+    {key:'corp',   label:'CORPORATE TAX'},
+    {key:'excise', label:'EXCISE / SALES TAX'},
+    {key:'services',label:'SERVICES TAX'},
+  ];
+  taxCats.forEach(cat=>{
+    html+=`<tr class="cat-head"><td class="label-cell" colspan="2">${cat.label}</td>`;
+    years.forEach(()=>html+=`<td style="background:#E8EBF2;border:1px solid var(--line);"></td>`);
+    if(prevYr) html+=`<td style="background:#E8EBF2;border:1px solid var(--line);"></td>`;
+    html+='</tr>';
+    TAX_ROWS.filter(r=>r.cat===cat.key).forEach(r=>{
+      html+=`<tr><td class="label-cell indent">${r.label}</td><td class="bracket-cell">${r.bracket||'rate %'}</td>`;
+      years.forEach(y=>{
+        html+=`<td class="data-cell">${makeInput(region,y,r.id+'_rate',false,'0.01')}</td>`;
+      });
+      if(prevYr){
+        const cur=parseFloat(getData(region,curYr,r.id+'_rate'));
+        const prev=parseFloat(getData(region,prevYr,r.id+'_rate'));
+        const {str,cls}=fmtPct(cur,prev);
+        html+=`<td class="pct-cell ${cls}">${str}</td>`;
+      }
+      html+='</tr>';
+    });
+  });
+
+  // Federal grants auto row
+  html+=`<tr class="cat-head"><td class="label-cell" colspan="2">FEDERAL GRANTS</td>`;
+  years.forEach(()=>html+=`<td style="background:#E8EBF2;border:1px solid var(--line);"></td>`);
+  if(prevYr) html+=`<td style="background:#E8EBF2;border:1px solid var(--line);"></td>`;
+  html+='</tr>';
+  html+=`<tr><td class="label-cell indent">Federal Grants (auto)</td><td class="bracket-cell">18% inc+corp</td>`;
+  years.forEach(y=>{
+    const s=computeSummary(region,y);
+    html+=`<td class="data-cell"><input type="number" value="${fmtNum(s.grants/1e9)}" readonly placeholder="—"></td>`;
+  });
+  if(prevYr){
+    const sc=computeSummary(region,curYr); const sp=computeSummary(region,prevYr);
+    const {str,cls}=fmtPct(sc.grants/1e9,sp.grants/1e9);
+    html+=`<td class="pct-cell ${cls}">${str}</td>`;
+  }
+  html+='</tr>';
+
+  // ── EXPENDITURES section ──
+  html+=`<tr class="blank-row"><td colspan="${colspan}"></td></tr>`;
+  html+=`<tr class="section-head"><td colspan="${colspan}">EXPENDITURES ($B)</td></tr>`;
+
+  html+=`<tr class="sub-head"><td class="label-cell">Department</td><td class="bracket-cell">Unit</td>`;
+  years.forEach(y=>html+=`<td class="col-head" style="text-align:right;padding-right:8px;">${y}</td>`);
+  if(prevYr) html+=`<td class="col-head" style="text-align:right;">$ Δ</td>`;
+  html+='</tr>';
+
+  DEPT_ROWS.forEach(r=>{
+    html+=`<tr><td class="label-cell indent">${r.label}</td><td class="bracket-cell">$B</td>`;
+    years.forEach(y=>{
+      html+=`<td class="data-cell">${makeInput(region,y,r.id,false,'0.1')}</td>`;
+    });
+    if(prevYr){
+      const cur=parseFloat(getData(region,curYr,r.id))||0;
+      const prev=parseFloat(getData(region,prevYr,r.id))||0;
+      const diff=cur-prev;
+      const cls=diff>0?'pos':(diff<0?'neg':'neutral');
+      const str=prev===0&&cur===0?'—':(diff>=0?'+':'')+diff.toFixed(2)+'B';
+      html+=`<td class="pct-cell ${cls}">${str}</td>`;
+    }
+    html+='</tr>';
+  });
+
+  // Interest rate & prior debt inputs
+  html+=`<tr class="blank-row"><td colspan="${colspan}"></td></tr>`;
+  html+=`<tr><td class="label-cell indent">Interest Rate on Debt</td><td class="bracket-cell">%</td>`;
+  years.forEach(y=>{
+    html+=`<td class="data-cell">${makeInput(region,y,'interestRate',false,'0.1','4.0')}</td>`;
+  });
+  if(prevYr) html+=`<td class="pct-cell neutral">—</td>`;
+  html+='</tr>';
+
+  html+=`<tr><td class="label-cell indent">Prior Year Debt</td><td class="bracket-cell">$B</td>`;
+  years.forEach(y=>{
+    const def=DEBT_DEFAULTS[region];
+    html+=`<td class="data-cell">${makeInput(region,y,'prevDebt',false,'1','${def}')}</td>`;
+  });
+  if(prevYr) html+=`<td class="pct-cell neutral">—</td>`;
+  html+='</tr>';
+
+  // ── SUMMARY rows (auto-computed) ──
+  html+=`<tr class="blank-row"><td colspan="${colspan}"></td></tr>`;
+  const summaryDefs=[
+    {label:'Net Interest on Debt',key:'netInterest'},
+    {label:'Total Revenue',key:'totalRevenue'},
+    {label:'Total Expenditure',key:'totalExp'},
+    {label:'Surplus / Deficit',key:'balance'},
+    {label:'Total Debt',key:'totalDebt'},
+  ];
+  summaryDefs.forEach(f=>{
+    html+=`<tr class="summary-row"><td class="label-cell">${f.label}</td><td class="bracket-cell">$B</td>`;
+    years.forEach(y=>{
+      const s=computeSummary(region,y);
+      const val=(s[f.key]||0)/1e9;
+      const isBal=f.key==='balance';
+      const color=isBal?(val>=0?'color:var(--green)':'color:var(--red)'):'';
+      html+=`<td class="data-cell" style="${color}background:var(--head);">
+        <input type="number" value="${fmtNum(val)}" readonly style="${color}font-weight:600;"></td>`;
+    });
+    if(prevYr){
+      const sc=computeSummary(region,curYr); const sp=computeSummary(region,prevYr);
+      const cur=(sc[f.key]||0)/1e9; const prev=(sp[f.key]||0)/1e9;
+      const {str,cls}=fmtPct(cur,prev);
+      html+=`<td class="pct-cell ${cls}">${str}</td>`;
+    }
+    html+='</tr>';
+  });
+
+  // ── STATS section ──
+  html+=`<tr class="blank-row"><td colspan="${colspan}"></td></tr>`;
+  html+=`<tr class="section-head"><td colspan="${colspan}">STATISTICS (AUTO-COMPUTED)</td></tr>`;
+  const statDefs=[
+    {id:'gdp',label:'GDP',fmt:n=>'$'+(n/1e12).toFixed(2)+'T'},
+    {id:'avgIncome',label:'Avg. Income',fmt:n=>'$'+Math.round(n).toLocaleString('en-US')},
+    {id:'costOfLiving',label:'Cost of Living',fmt:n=>'$'+Math.round(n).toLocaleString('en-US')},
+    {id:'unemployment',label:'Unemployment',fmt:n=>n+'%'},
+    {id:'poverty',label:'Poverty Rate',fmt:n=>n+'%'},
+    {id:'totalDebt',label:'Regional Debt',fmt:n=>'$'+(n/1e9).toFixed(1)+'B'},
+    {id:'leading',label:'Leading Sector',fmt:n=>n},
+    {id:'lagging',label:'Lagging Sector',fmt:n=>n},
+  ];
+  statDefs.forEach(s=>{
+    html+=`<tr class="stat-row"><td class="label-cell">${s.label}</td><td class="bracket-cell"></td>`;
+    years.forEach(y=>{
+      const st=computeStats(region,y);
+      const val=st[s.id];
+      const display=val!=null?s.fmt(val):'—';
+      html+=`<td class="data-cell" style="background:var(--head);">
+        <input type="text" value="${display}" readonly></td>`;
+    });
+    if(prevYr) html+=`<td class="pct-cell neutral"></td>`;
+    html+='</tr>';
+  });
+
+  document.getElementById('tableBody').innerHTML=html;
+
+  // Attach input listeners
+  document.querySelectorAll('#ledgerTable input:not([readonly])').forEach(el=>{
+    el.addEventListener('change',e=>{
+      const r=e.target.dataset.region;
+      const y=e.target.dataset.year;
+      const f=e.target.dataset.field;
+      if(r&&y&&f){
+        setData(r,y,f,parseFloat(e.target.value)||0);
+        buildTable();
+        renderStats();
+      }
+    });
+  });
+}
+
+function renderStats(){
+  const region=currentRegion;
+  const latestFilled=FISCAL_YEARS.slice().reverse().find(y=>allData[region]&&allData[region][y]&&Object.keys(allData[region][y]).length>0)||FISCAL_YEARS[0];
+  const st=computeStats(region,latestFilled);
+  const items=[
+    {label:'GDP',value:'$'+(st.gdp/1e12).toFixed(2)+'T',sub:latestFilled},
+    {label:'Avg. Income',value:'$'+Math.round(st.avgIncome).toLocaleString('en-US'),sub:'per capita'},
+    {label:'Cost of Living',value:'$'+Math.round(st.costOfLiving).toLocaleString('en-US'),sub:'annual'},
+    {label:'Unemployment',value:st.unemployment+'%',sub:'of workforce'},
+    {label:'Poverty Rate',value:st.poverty+'%',sub:'of population'},
+    {label:'Regional Debt',value:'$'+(st.totalDebt/1e9).toFixed(1)+'B',sub:'total outstanding'},
+    {label:'Leading Sector',value:st.leading,sub:'highest growth',extra:'leading'},
+    {label:'Lagging Sector',value:st.lagging,sub:'lowest growth',extra:'lagging'},
+  ];
+  document.getElementById('statsPanel').innerHTML=items.map(i=>`
+    <div class="stat-card ${i.extra||''}">
+      <div class="s-label">${i.label}</div>
+      <div class="s-value">${i.value}</div>
+      <div class="s-sub">${i.sub}</div>
+    </div>`).join('');
+}
+
+// ── REGION TABS ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.region-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.region-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentRegion=tab.dataset.region;
+    buildTable();
+    renderStats();
+  });
+});
+
+// ── BUTTONS ───────────────────────────────────────────────────────────────────
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const ok=saveToStorage();
+  const msg=document.getElementById('statusMsg');
+  msg.textContent=ok?'Saved ✓ — budget form will read updated data.':'Save failed.';
+  setTimeout(()=>msg.textContent='',4000);
+});
+
+document.getElementById('unhideBtn').addEventListener('click',()=>{
+  hiddenCols=!hiddenCols;
+  document.getElementById('unhideBtn').textContent=hiddenCols?'Show All Years':'Show Less';
+  buildTable();
+});
+
+// ── SEED DATA ─────────────────────────────────────────────────────────────────
+function preSeedData(){
+  const SEED={
+    NewEngland:{
+      rates:{inc_Lower:2,inc_Middle:4.5,inc_Upper:6,corp_Small:6,corp_Large:9,
+        sales_Gasoline:4,sales_Alcohol:4,sales_Tobacco:8.5,
+        serv_GeneralSales:4.5,serv_Services:3.8,serv_CapitalGains:11},
+      depts:{expEducation:25,expHealth:100,expTransport:8,expSafety:20,
+        expJustice:2,expHUD:55,expLabour:16,expAg:30,expTreasury:3,expAdmin:2,expSocial:13},
+      interestRate:4.2,prevDebt:620
+    },
+    Lincoln:{
+      rates:{inc_Lower:2,inc_Middle:5,inc_Upper:8,corp_Small:3,corp_Large:6,
+        sales_Gasoline:10,sales_Alcohol:20,sales_Tobacco:20,
+        serv_GeneralSales:5,serv_Services:7,serv_CapitalGains:11},
+      depts:{expEducation:14,expHealth:52,expTransport:5,expSafety:11,
+        expJustice:1,expHUD:28,expLabour:8,expAg:16,expTreasury:2,expAdmin:1,expSocial:7},
+      interestRate:4.5,prevDebt:310
+    },
+    Dixie:{
+      rates:{inc_Lower:2,inc_Middle:4,inc_Upper:6,corp_Small:5,corp_Large:6,
+        sales_Gasoline:7,sales_Alcohol:12,sales_Tobacco:15,
+        serv_GeneralSales:4,serv_Services:4.5,serv_CapitalGains:11},
+      depts:{expEducation:19,expHealth:68,expTransport:6,expSafety:14,
+        expJustice:2,expHUD:36,expLabour:10,expAg:20,expTreasury:2,expAdmin:2,expSocial:9},
+      interestRate:4.3,prevDebt:488
+    },
+    Pacifica:{
+      rates:{inc_Lower:3,inc_Middle:6,inc_Upper:9,corp_Small:7,corp_Large:11,
+        sales_Gasoline:5,sales_Alcohol:8,sales_Tobacco:12,
+        serv_GeneralSales:5.5,serv_Services:5,serv_CapitalGains:11},
+      depts:{expEducation:16,expHealth:44,expTransport:5,expSafety:9,
+        expJustice:1,expHUD:23,expLabour:7,expAg:13,expTreasury:2,expAdmin:1,expSocial:6},
+      interestRate:4.0,prevDebt:400
+    }
+  };
+  const fy='1993-94';
+  REGIONS.forEach(r=>{
+    if(allData[r]&&allData[r][fy]&&Object.keys(allData[r][fy]).length>2) return;
+    if(!allData[r]) allData[r]={};
+    if(!allData[r][fy]) allData[r][fy]={};
+    const d=SEED[r];
+    TAX_ROWS.forEach(row=>{ allData[r][fy][row.id+'_rate']=d.rates[row.id]||0; });
+    DEPT_ROWS.forEach(row=>{ allData[r][fy][row.id]=d.depts[row.id]||0; });
+    allData[r][fy]['interestRate']=d.interestRate;
+    allData[r][fy]['prevDebt']=d.prevDebt;
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadFromStorage();
+preSeedData();
+buildTable();
+renderStats();
+</script>
+</body>
+</html>
